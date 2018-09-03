@@ -13,7 +13,6 @@
 #' @param loss Loss function. 
 #' @param activation Activtion function.
 #' @param optimizer Name of optimizer or optimizer instance.
-#' @param plot Plot training and validation errors.
 #'
 #' @return Fitted model.
 #' @export
@@ -30,8 +29,7 @@ survnet <- function(y,
                     validation_split = 0.2,
                     loss, 
                     activation = "tanh",
-                    optimizer = optimizer_rmsprop(lr = 0.001), 
-                    plot = TRUE) {
+                    optimizer = optimizer_rmsprop(lr = 0.001)) {
   
   # TODO: Formula possible? Not for RNN?
   # model_data <- model.frame(formula, data)
@@ -129,11 +127,6 @@ survnet <- function(y,
     x, y_mat,
     epochs = epochs, batch_size = batch_size, validation_split = validation_split
   )
-
-  # Plot?
-  if (plot) {
-    plot(history)
-  }
 
   # Return model
   model

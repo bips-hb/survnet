@@ -7,7 +7,7 @@
 survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   units_causes = c(3, 2), epochs = 100, batch_size = 16,
   validation_split = 0.2, loss, activation = "tanh",
-  optimizer = optimizer_rmsprop(lr = 0.001), plot = TRUE)
+  optimizer = optimizer_rmsprop(lr = 0.001))
 }
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
@@ -33,8 +33,6 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \item{activation}{Activtion function.}
 
 \item{optimizer}{Name of optimizer or optimizer instance.}
-
-\item{plot}{Plot training and validation errors.}
 }
 \value{
 Fitted model.
