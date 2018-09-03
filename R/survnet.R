@@ -1,7 +1,7 @@
 
 #' Artificial neural networks for survival analysis
 #'
-#' @param y Survival outcome, created with \code{Surv()}.
+#' @param y Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.
 #' @param x Predictors: \code{matrix}, \code{array} or \code{data.frame}.
 #' @param breaks Right interval limits for discrete survival time.
 #' @param units Vector of units, each specifying the number of units in one hidden layer.
@@ -38,7 +38,7 @@ survnet <- function(y,
   # y <- model_data[, 1]
   # x <- as.matrix(model_data[, -1])
   
-  if (!is.Surv(y)) {
+  if (!(is.Surv(y) | ((is.numeric(y) | is.matrix(y) | is.data.frame(y)) & ncol(y) == 2))) {
     stop("Unexpected type for 'y'.")
   }
   

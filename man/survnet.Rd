@@ -10,7 +10,7 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   optimizer = optimizer_rmsprop(lr = 0.001), plot = TRUE)
 }
 \arguments{
-\item{y}{Survival outcome, created with \code{Surv()}.}
+\item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
 
 \item{x}{Predictors: \code{matrix}, \code{array} or \code{data.frame}.}
 
