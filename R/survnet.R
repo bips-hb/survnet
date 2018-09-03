@@ -129,7 +129,7 @@ survnet <- function(y,
   )
 
   # Return model
-  res <- list(fit = model, 
+  res <- list(model = model, 
               history = history, 
               num_intervals = num_intervals, 
               num_causes = num_causes)

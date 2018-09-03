@@ -15,7 +15,7 @@ predict.survnet <- function(object, newdata, cause = NULL, ...) {
   }
   
   # Predict with Keras
-  pred <- object$fit %>% predict(newdata)
+  pred <- object$model %>% predict(newdata)
   
   # Cause-specific predictions
   cause_preds <- lapply(1:object$num_causes, function(i) {
