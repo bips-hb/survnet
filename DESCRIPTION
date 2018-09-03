@@ -1,0 +1,15 @@
+Package: survnet
+Type: Package
+Title: Artificial neural networks for survival analysis
+Version: 0.0.1
+Date: 2018-09-03
+Author: Marvin N. Wright
+Maintainer: Marvin N. Wright <cran@wrig.de>
+Description: Artificial neural networks for survival analysis
+License: MIT + file LICENSE
+Depends:
+    survival, 
+    keras
+Imports:
+    magrittr
+RoxygenNote: 6.1.0
