@@ -132,7 +132,8 @@ survnet <- function(y,
   res <- list(model = model, 
               history = history, 
               num_intervals = num_intervals, 
-              num_causes = num_causes)
+              num_causes = num_causes, 
+              breaks = breaks)
   class(res) <- "survnet"
   res
 }
