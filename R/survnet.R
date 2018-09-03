@@ -129,5 +129,8 @@ survnet <- function(y,
   )
 
   # Return model
-  model
+  res <- list(fit = model, 
+              history = history)
+  class(res) <- "survnet"
+  res
 }
