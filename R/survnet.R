@@ -134,9 +134,9 @@ survnet <- function(y,
         layer_dense(units = units_causes[[i]][j], activation = activation, name = paste0("cause", i, "_", j))
       })
       # Dropout layers
-      for (k in 1:length(dropout_causes)) {
-        if (dropout_causes[k] > 0) {
-          layers <- append(layers, layer_dropout(rate = dropout_causes[k]), k + length(layers) - length(units_causes[[k]]))
+      for (j in 1:length(dropout_causes)) {
+        if (dropout_causes[j] > 0) {
+          layers <- append(layers, layer_dropout(rate = dropout_causes[j]), j + length(layers) - length(units_causes[[i]]))
         }
       }
       magrittr::freduce(shared, layers)
