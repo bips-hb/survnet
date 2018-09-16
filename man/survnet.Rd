@@ -6,7 +6,9 @@
 \usage{
 survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   units_causes = c(3, 2), epochs = 100, batch_size = 16,
-  validation_split = 0.2, loss, activation = "tanh",
+  validation_split = 0.2, loss, activation = "tanh", dropout = rep(0,
+  length(units)), dropout_rnn = rep(0, length(units_rnn)),
+  dropout_causes = rep(0, length(units_causes)),
   optimizer = optimizer_rmsprop(lr = 0.001))
 }
 \arguments{
@@ -31,6 +33,12 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \item{loss}{Loss function.}
 
 \item{activation}{Activtion function.}
+
+\item{dropout}{Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).}
+
+\item{dropout_rnn}{Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).}
+
+\item{dropout_causes}{Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).}
 
 \item{optimizer}{Name of optimizer or optimizer instance.}
 }

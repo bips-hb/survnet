@@ -12,8 +12,11 @@
 #' @param validation_split Fraction in [0,1] of the training data to be used as validation data.
 #' @param loss Loss function. 
 #' @param activation Activtion function.
+#' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
+#' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
+#' @param dropout_causes Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).
 #' @param optimizer Name of optimizer or optimizer instance.
-#'
+#' 
 #' @return Fitted model.
 #' @export
 #' @import survival keras
@@ -29,6 +32,9 @@ survnet <- function(y,
                     validation_split = 0.2,
                     loss, 
                     activation = "tanh",
+                    dropout = rep(0, length(units)),
+                    dropout_rnn = rep(0, length(units_rnn)), 
+                    dropout_causes = rep(0, length(units_causes)),
                     optimizer = optimizer_rmsprop(lr = 0.001)) {
   
   # TODO: Formula possible? Not for RNN?
@@ -65,6 +71,9 @@ survnet <- function(y,
     stop("Number of cause-specific layers not matching number of causes.")
   }
 
+  # TODO: Check dropout specification
+  # TODO: Allow list for cause-specific dropout
+  
   # Convert data, depending on loss function
   if (identical(loss, loss_cif_loglik)) {
     y_mat <- convert_surv_cens(time = y[, 1], status = y[, 2], breaks = breaks, num_causes = num_causes)
@@ -76,7 +85,7 @@ survnet <- function(y,
   input <- layer_input(shape = dim(x)[-1])
 
   if (length(dim(x)) > 2) {
-    # RNN
+    # RNN layers
     rnn_layers <- lapply(1:length(units_rnn), function(i) {
       if (i == length(units_rnn)) {
         return_sequences <- FALSE
@@ -86,24 +95,50 @@ survnet <- function(y,
       layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
                  name = paste0("rnn_", i))
     })
+    # RNN Dropout layers
+    for (i in 1:length(dropout_rnn)) {
+      if (dropout_rnn[i] > 0) {
+        rnn_layers <- append(rnn_layers, layer_dropout(rate = dropout_rnn[i]), i + length(rnn_layers) - length(units_rnn))
+      }
+    }
+    # non-RNN layers
     dense_layers <- lapply(1:length(units), function(i) {
       layer_dense(units = units[i], activation = activation, name = paste0("dense_", i))
     })
+    # non-RNN Dropout layers
+    for (i in 1:length(dropout)) {
+      if (dropout[i] > 0) {
+        dense_layers <- append(dense_layers, layer_dropout(rate = dropout[i]), i + length(dense_layers) - length(units))
+      }
+    }
     shared <- magrittr::freduce(magrittr::freduce(input, rnn_layers), dense_layers)
   } else {
-    # non-RNN
+    # non-RNN layers
     layers <- lapply(1:length(units), function(i) {
       layer_dense(units = units[i], activation = activation, name = paste0("dense_", i))
     })
+    # Dropout layers
+    for (i in 1:length(dropout)) {
+      if (dropout[i] > 0) {
+        layers <- append(layers, layer_dropout(rate = dropout[i]), i + length(layers) - length(units))
+      }
+    }
     shared <- magrittr::freduce(input, layers)
   }
 
   if (num_causes> 1) {
-    # Competing risks
+    # Competing risk
     sub_layers <- lapply(1:num_causes, function(i) {
+      # Cause-specific layers
       layers <- lapply(1:length(units_causes[[i]]), function(j) {
         layer_dense(units = units_causes[[i]][j], activation = activation, name = paste0("cause", i, "_", j))
       })
+      # Dropout layers
+      for (k in 1:length(dropout_causes)) {
+        if (dropout_causes[k] > 0) {
+          layers <- append(layers, layer_dropout(rate = dropout_causes[k]), k + length(layers) - length(units_causes[[k]]))
+        }
+      }
       magrittr::freduce(shared, layers)
     })
     output <- layer_concatenate(sub_layers) %>%
