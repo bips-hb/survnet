@@ -6,10 +6,11 @@
 \usage{
 survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   units_causes = c(3, 2), epochs = 100, batch_size = 16,
-  validation_split = 0.2, loss, activation = "tanh", dropout = rep(0,
-  length(units)), dropout_rnn = rep(0, length(units_rnn)),
-  dropout_causes = rep(0, length(units_causes)),
-  optimizer = optimizer_rmsprop(lr = 0.001), verbose = 2)
+  validation_split = 0.2, loss = loss_cif_loglik,
+  activation = "tanh", dropout = rep(0, length(units)),
+  dropout_rnn = rep(0, length(units_rnn)), dropout_causes = rep(0,
+  length(units_causes)), optimizer = optimizer_rmsprop(lr = 0.001),
+  verbose = 2)
 }
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
