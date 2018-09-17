@@ -16,6 +16,7 @@
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
 #' @param dropout_causes Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).
 #' @param optimizer Name of optimizer or optimizer instance.
+#' @param verbose Verbosity mode (0 = silent, 1 = progress bar, 2 = one line per epoch). 
 #' 
 #' @return Fitted model.
 #' @export
@@ -35,7 +36,8 @@ survnet <- function(y,
                     dropout = rep(0, length(units)),
                     dropout_rnn = rep(0, length(units_rnn)), 
                     dropout_causes = rep(0, length(units_causes)),
-                    optimizer = optimizer_rmsprop(lr = 0.001)) {
+                    optimizer = optimizer_rmsprop(lr = 0.001), 
+                    verbose = 2) {
   
   # TODO: Formula possible? Not for RNN?
   # model_data <- model.frame(formula, data)
@@ -160,7 +162,8 @@ survnet <- function(y,
   # Fit model
   history <- model %>% fit(
     x, y_mat,
-    epochs = epochs, batch_size = batch_size, validation_split = validation_split
+    epochs = epochs, batch_size = batch_size, validation_split = validation_split, 
+    verbose = verbose
   )
 
   # Return model

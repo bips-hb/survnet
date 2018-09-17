@@ -9,7 +9,7 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   validation_split = 0.2, loss, activation = "tanh", dropout = rep(0,
   length(units)), dropout_rnn = rep(0, length(units_rnn)),
   dropout_causes = rep(0, length(units_causes)),
-  optimizer = optimizer_rmsprop(lr = 0.001))
+  optimizer = optimizer_rmsprop(lr = 0.001), verbose = 2)
 }
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
@@ -41,6 +41,8 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \item{dropout_causes}{Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).}
 
 \item{optimizer}{Name of optimizer or optimizer instance.}
+
+\item{verbose}{Verbosity mode (0 = silent, 1 = progress bar, 2 = one line per epoch).}
 }
 \value{
 Fitted model.
