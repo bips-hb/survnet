@@ -15,6 +15,9 @@
 #' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
 #' @param dropout_causes Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).
+#' @param l2 Vector of L2 regularization factors for each hidden layer. Use 0 for no regularization (default).
+#' @param l2_rnn Vector of L2 regularization factors for each recurrent layer. Use 0 for no regularization (default).
+#' @param l2_causes Vector of L2 regularization factors for each cause-specific layer. Use 0 for no regularization (default).
 #' @param optimizer Name of optimizer or optimizer instance.
 #' @param verbose Verbosity mode (0 = silent, 1 = progress bar, 2 = one line per epoch). 
 #' 
@@ -36,6 +39,9 @@ survnet <- function(y,
                     dropout = rep(0, length(units)),
                     dropout_rnn = rep(0, length(units_rnn)), 
                     dropout_causes = rep(0, length(units_causes)),
+                    l2 = rep(0, length(units)), 
+                    l2_rnn = rep(0, length(units_rnn)), 
+                    l2_causes = rep(0, length(units_causes)), 
                     optimizer = optimizer_rmsprop(lr = 0.001), 
                     verbose = 2) {
   
@@ -75,6 +81,10 @@ survnet <- function(y,
 
   # TODO: Check dropout specification
   # TODO: Allow list for cause-specific dropout
+  # TODO: Add tests for dropout in RNN/CR
+  # TODO: Check l2 specification
+  # TODO: Allow list for cause-specific l2
+  # TODO: Add tests for l2 in RNN/CR
   
   # Convert data, depending on loss function
   if (identical(loss, loss_cif_loglik)) {
@@ -94,8 +104,13 @@ survnet <- function(y,
       } else {
         return_sequences <- TRUE
       }
+      if (l2_rnn[i] > 0) {
+        kernel_regularizer <- regularizer_l2(l = l2_rnn[i])
+      } else {
+        kernel_regularizer <- NULL
+      }
       layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
-                 name = paste0("rnn_", i))
+                 kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
     })
     # RNN Dropout layers
     for (i in 1:length(dropout_rnn)) {
@@ -105,7 +120,13 @@ survnet <- function(y,
     }
     # non-RNN layers
     dense_layers <- lapply(1:length(units), function(i) {
-      layer_dense(units = units[i], activation = activation, name = paste0("dense_", i))
+      if (l2[i] > 0) {
+        kernel_regularizer <- regularizer_l2(l = l2[i])
+      } else {
+        kernel_regularizer <- NULL
+      }
+      layer_dense(units = units[i], activation = activation, 
+                  kernel_regularizer = kernel_regularizer, name = paste0("dense_", i))
     })
     # non-RNN Dropout layers
     for (i in 1:length(dropout)) {
@@ -117,7 +138,13 @@ survnet <- function(y,
   } else {
     # non-RNN layers
     layers <- lapply(1:length(units), function(i) {
-      layer_dense(units = units[i], activation = activation, name = paste0("dense_", i))
+      if (l2[i] > 0) {
+        kernel_regularizer <- regularizer_l2(l = l2[i])
+      } else {
+        kernel_regularizer <- NULL
+      }
+      layer_dense(units = units[i], activation = activation, 
+                  kernel_regularizer = kernel_regularizer, name = paste0("dense_", i))
     })
     # Dropout layers
     for (i in 1:length(dropout)) {
@@ -133,7 +160,13 @@ survnet <- function(y,
     sub_layers <- lapply(1:num_causes, function(i) {
       # Cause-specific layers
       layers <- lapply(1:length(units_causes[[i]]), function(j) {
-        layer_dense(units = units_causes[[i]][j], activation = activation, name = paste0("cause", i, "_", j))
+        if (l2_causes[j] > 0) {
+          kernel_regularizer <- regularizer_l2(l = l2_causes[j])
+        } else {
+          kernel_regularizer <- NULL
+        }
+        layer_dense(units = units_causes[[i]][j], activation = activation, 
+                    kernel_regularizer = kernel_regularizer, name = paste0("cause", i, "_", j))
       })
       # Dropout layers
       for (j in 1:length(dropout_causes)) {

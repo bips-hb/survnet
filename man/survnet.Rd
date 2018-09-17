@@ -9,8 +9,9 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   validation_split = 0.2, loss = loss_cif_loglik,
   activation = "tanh", dropout = rep(0, length(units)),
   dropout_rnn = rep(0, length(units_rnn)), dropout_causes = rep(0,
-  length(units_causes)), optimizer = optimizer_rmsprop(lr = 0.001),
-  verbose = 2)
+  length(units_causes)), l2 = rep(0, length(units)), l2_rnn = rep(0,
+  length(units_rnn)), l2_causes = rep(0, length(units_causes)),
+  optimizer = optimizer_rmsprop(lr = 0.001), verbose = 2)
 }
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
@@ -40,6 +41,12 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \item{dropout_rnn}{Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).}
 
 \item{dropout_causes}{Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).}
+
+\item{l2}{Vector of L2 regularization factors for each hidden layer. Use 0 for no regularization (default).}
+
+\item{l2_rnn}{Vector of L2 regularization factors for each recurrent layer. Use 0 for no regularization (default).}
+
+\item{l2_causes}{Vector of L2 regularization factors for each cause-specific layer. Use 0 for no regularization (default).}
 
 \item{optimizer}{Name of optimizer or optimizer instance.}
 
