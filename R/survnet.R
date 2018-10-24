@@ -45,8 +45,9 @@ survnet <- function(y,
                     optimizer = optimizer_rmsprop(lr = 0.001), 
                     verbose = 2) {
   
-  # TODO: Allow list for cause-specific dropout
-  # TODO: Allow list for cause-specific l2
+  # Force evaluation of dependent arguments
+  force(dropout_causes)
+  force(l2_causes)
   
   if (!(is.Surv(y) | ((is.numeric(y) | is.matrix(y) | is.data.frame(y)) & ncol(y) == 2))) {
     stop("Unexpected type for 'y'.")
@@ -87,6 +88,22 @@ survnet <- function(y,
     }
   }
   
+  if (!is.list(dropout_causes)) {
+    if (is.numeric(dropout_causes)) {
+      dropout_causes <- rep(list(dropout_causes), num_causes)
+    } else {
+      stop("Misspecified cause-specific dropout.")
+    }
+  }
+  
+  if (!is.list(l2_causes)) {
+    if (is.numeric(l2_causes)) {
+      l2_causes <- rep(list(l2_causes), num_causes)
+    } else {
+      stop("Misspecified cause-specific L2 regularization.")
+    }
+  }
+  
   if (length(units_causes) != num_causes) {
     stop("Number of cause-specific layers not matching number of causes.")
   }
@@ -97,7 +114,10 @@ survnet <- function(y,
   if (!is.vector(dropout_rnn) || length(dropout_rnn) != length(units_rnn)) {
     stop("Number of RNN dropout layers not matching number of RNN layers.")
   }
-  if (!is.vector(dropout_causes) || length(dropout_causes) != length(units_causes)) {
+  if (!is.list(dropout_causes) || length(dropout_causes) != num_causes) {
+    stop("Number of cause-specific dropout layers not matching number of causes.")
+  } 
+  if (!all(sapply(dropout_causes, length) == sapply(units_causes, length))) {
     stop("Number of cause-specific dropout layers not matching number of cause-specific layers.")
   }
   
@@ -107,7 +127,10 @@ survnet <- function(y,
   if (!is.vector(l2_rnn) || length(l2_rnn) != length(units_rnn)) {
     stop("Number of RNN L2 regularization factors not matching number of RNN layers.")
   }
-  if (!is.vector(l2_causes) || length(l2_causes) != length(units_causes)) {
+  if (!is.list(l2_causes) || length(l2_causes) != num_causes) {
+    stop("Number of cause-specific L2 regularization factors not matching number of causes.")
+  }
+  if (!all(sapply(l2_causes, length) == sapply(units_causes, length))) {
     stop("Number of cause-specific L2 regularization factors not matching number of cause-specific layers.")
   }
   
@@ -180,13 +203,13 @@ survnet <- function(y,
                                  dense_layers)
   }
 
-  if (num_causes> 1) {
+  if (num_causes > 1) {
     # Competing risk
     sub_layers <- lapply(1:num_causes, function(i) {
       # Cause-specific layers
       layers <- lapply(1:length(units_causes[[i]]), function(j) {
-        if (l2_causes[j] > 0) {
-          kernel_regularizer <- regularizer_l2(l = l2_causes[j])
+        if (l2_causes[[i]][j] > 0) {
+          kernel_regularizer <- regularizer_l2(l = l2_causes[[i]][j])
         } else {
           kernel_regularizer <- NULL
         }
@@ -195,8 +218,8 @@ survnet <- function(y,
       })
       # Dropout layers
       for (j in 1:length(dropout_causes)) {
-        if (dropout_causes[j] > 0) {
-          layers <- append(layers, layer_dropout(rate = dropout_causes[j]), j + length(layers) - length(units_causes[[i]]))
+        if (dropout_causes[[i]][j] > 0) {
+          layers <- append(layers, layer_dropout(rate = dropout_causes[[i]][j]), j + length(layers) - length(units_causes[[i]]))
         }
       }
       magrittr::freduce(shared, layers)
