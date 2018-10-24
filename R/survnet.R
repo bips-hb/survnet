@@ -61,14 +61,15 @@ survnet <- function(y,
     } 
     x_rnn <- x[[2]]
     x <- x[[1]]
-  } else if (is.data.frame(x)) {
-    x_rnn <- NULL
-    x <- as.matrix(x)
-  } else if (is.matrix(x)) {
+  } else if (is.data.frame(x) || is.matrix(x)) {
     x_rnn <- NULL
   } else if (is.array(x)) {
     x_rnn <- x
     x <- NULL
+  }
+  
+  if (!is.null(x) && is.data.frame(x)) {
+    x <- as.matrix(x)
   }
   
   # Number of time intervals
