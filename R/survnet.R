@@ -2,7 +2,8 @@
 #' Artificial neural networks for survival analysis
 #'
 #' @param y Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.
-#' @param x Predictors: \code{matrix}, \code{array} or \code{data.frame}.
+#' @param x Predictors: \code{matrix} or \code{data.frame}.
+#' @param x_rnn Time-series predictors: \code{array}. Input for recurrent layers. 
 #' @param breaks Right interval limits for discrete survival time.
 #' @param units Vector of units, each specifying the number of units in one hidden layer.
 #' @param units_rnn Vector of units for recurrent layers.
@@ -26,7 +27,8 @@
 #' @import survival keras
 #' @importFrom magrittr freduce
 survnet <- function(y, 
-                    x, 
+                    x = NULL, 
+                    x_rnn = NULL,
                     breaks, 
                     units = c(3, 5),
                     units_rnn = c(4, 6),
@@ -54,8 +56,16 @@ survnet <- function(y,
     stop("Unexpected type for 'y'.")
   }
   
-  if (!(is.matrix(x) | is.array(x))) {
+  if (!(is.null(x) || is.matrix(x))) {
     x <- as.matrix(x)
+  }
+  
+  if (!(is.null(x_rnn) || is.array(x_rnn))) {
+    stop("Parameter 'x_rnn' must be of type 'array'.")
+  }
+  
+  if (is.null(x) & is.null(x_rnn)) {
+    stop("Need at least one of 'x' and 'x_rnn'.")
   }
   
   # Number of time intervals
@@ -93,10 +103,15 @@ survnet <- function(y,
     stop("Unknown loss function.")
   }
 
-  # Create model
-  input <- layer_input(shape = dim(x)[-1])
+  # Input layer
+  if (!is.null(x)) {
+    input <- layer_input(shape = dim(x)[-1])
+  }
 
-  if (length(dim(x)) > 2) {
+  # Define RNN layers
+  if (!is.null(x_rnn)) {
+    # Input layer
+    input_rnn <- layer_input(shape = dim(x_rnn)[-1])
     # RNN layers
     rnn_layers <- lapply(1:length(units_rnn), function(i) {
       if (i == length(units_rnn)) {
@@ -118,41 +133,36 @@ survnet <- function(y,
         rnn_layers <- append(rnn_layers, layer_dropout(rate = dropout_rnn[i]), i + length(rnn_layers) - length(units_rnn))
       }
     }
-    # non-RNN layers
-    dense_layers <- lapply(1:length(units), function(i) {
-      if (l2[i] > 0) {
-        kernel_regularizer <- regularizer_l2(l = l2[i])
-      } else {
-        kernel_regularizer <- NULL
-      }
-      layer_dense(units = units[i], activation = activation, 
-                  kernel_regularizer = kernel_regularizer, name = paste0("dense_", i))
-    })
-    # non-RNN Dropout layers
-    for (i in 1:length(dropout)) {
-      if (dropout[i] > 0) {
-        dense_layers <- append(dense_layers, layer_dropout(rate = dropout[i]), i + length(dense_layers) - length(units))
-      }
+  } 
+  
+  # non-RNN layers
+  dense_layers <- lapply(1:length(units), function(i) {
+    if (l2[i] > 0) {
+      kernel_regularizer <- regularizer_l2(l = l2[i])
+    } else {
+      kernel_regularizer <- NULL
     }
-    shared <- magrittr::freduce(magrittr::freduce(input, rnn_layers), dense_layers)
+    layer_dense(units = units[i], activation = activation, 
+                kernel_regularizer = kernel_regularizer, name = paste0("dense_", i))
+  })
+  # non-RNN Dropout layers
+  for (i in 1:length(dropout)) {
+    if (dropout[i] > 0) {
+      dense_layers <- append(dense_layers, layer_dropout(rate = dropout[i]), i + length(dense_layers) - length(units))
+    }
+  }
+  
+  # Connect input
+  if (!is.null(x) & is.null(x_rnn)) {
+    # Only non-RNN
+    shared <- magrittr::freduce(input, dense_layers)
+  } else if (is.null(x) & !is.null(x_rnn)) {
+    # Only RNN
+    shared <- magrittr::freduce(magrittr::freduce(input_rnn, rnn_layers), dense_layers)
   } else {
-    # non-RNN layers
-    layers <- lapply(1:length(units), function(i) {
-      if (l2[i] > 0) {
-        kernel_regularizer <- regularizer_l2(l = l2[i])
-      } else {
-        kernel_regularizer <- NULL
-      }
-      layer_dense(units = units[i], activation = activation, 
-                  kernel_regularizer = kernel_regularizer, name = paste0("dense_", i))
-    })
-    # Dropout layers
-    for (i in 1:length(dropout)) {
-      if (dropout[i] > 0) {
-        layers <- append(layers, layer_dropout(rate = dropout[i]), i + length(layers) - length(units))
-      }
-    }
-    shared <- magrittr::freduce(input, layers)
+    # Both non-RNN and RNN
+    shared <-  magrittr::freduce(layer_concatenate(list(input, magrittr::freduce(input_rnn, rnn_layers))), 
+                                 dense_layers)
   }
 
   if (num_causes> 1) {
@@ -184,7 +194,20 @@ survnet <- function(y,
       layer_dense(units = num_intervals, activation = 'softmax', name = "output")
   }
 
-  model <- keras_model(inputs = input, outputs = output)
+  # Define model
+  if (!is.null(x) & is.null(x_rnn)) {
+    # Only non-RNN
+    model <- keras_model(inputs = input, outputs = output)
+    xx <- x
+  } else if (is.null(x) & !is.null(x_rnn)) {
+    # Only RNN
+    model <- keras_model(inputs = input_rnn, outputs = output)
+    xx <- x_rnn
+  } else {
+    # Both non-RNN and RNN
+    model <- keras_model(inputs = list(input, input_rnn), outputs = output)
+    xx <- list(x, x_rnn)
+  }
   
   # Compile model
   model %>% compile(
@@ -194,7 +217,7 @@ survnet <- function(y,
 
   # Fit model
   history <- model %>% fit(
-    x, y_mat,
+    xx, y_mat,
     epochs = epochs, batch_size = batch_size, validation_split = validation_split, 
     verbose = verbose
   )

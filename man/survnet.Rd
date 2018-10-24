@@ -4,9 +4,9 @@
 \alias{survnet}
 \title{Artificial neural networks for survival analysis}
 \usage{
-survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
-  units_causes = c(3, 2), epochs = 100, batch_size = 16,
-  validation_split = 0.2, loss = loss_cif_loglik,
+survnet(y, x = NULL, x_rnn = NULL, breaks, units = c(3, 5),
+  units_rnn = c(4, 6), units_causes = c(3, 2), epochs = 100,
+  batch_size = 16, validation_split = 0.2, loss = loss_cif_loglik,
   activation = "tanh", dropout = rep(0, length(units)),
   dropout_rnn = rep(0, length(units_rnn)), dropout_causes = rep(0,
   length(units_causes)), l2 = rep(0, length(units)), l2_rnn = rep(0,
@@ -16,7 +16,9 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
 
-\item{x}{Predictors: \code{matrix}, \code{array} or \code{data.frame}.}
+\item{x}{Predictors: \code{matrix} or \code{data.frame}.}
+
+\item{x_rnn}{Time-series predictors: \code{array}. Input for recurrent layers.}
 
 \item{breaks}{Right interval limits for discrete survival time.}
 
