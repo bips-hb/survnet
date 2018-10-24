@@ -5,6 +5,7 @@ context("survnet_cr")
 
 # RNN data
 dat <- simulate_sinus_data(n = 100, p = 2, sequence_length = 12)
+breaks <- seq(0, 1, length.out = 5)[-1]
 
 test_that("Specification of cause-specific layers works", {
   nn <- survnet(y = dat$y, x = dat$x, breaks = breaks, epochs = 2, 
