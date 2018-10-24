@@ -45,10 +45,8 @@ survnet <- function(y,
                     optimizer = optimizer_rmsprop(lr = 0.001), 
                     verbose = 2) {
   
-  # TODO: Formula possible? Not for RNN?
-  # model_data <- model.frame(formula, data)
-  # y <- model_data[, 1]
-  # x <- as.matrix(model_data[, -1])
+  # TODO: Allow list for cause-specific dropout
+  # TODO: Allow list for cause-specific l2
   
   if (!(is.Surv(y) | ((is.numeric(y) | is.matrix(y) | is.data.frame(y)) & ncol(y) == 2))) {
     stop("Unexpected type for 'y'.")
@@ -92,13 +90,26 @@ survnet <- function(y,
   if (length(units_causes) != num_causes) {
     stop("Number of cause-specific layers not matching number of causes.")
   }
-
-  # TODO: Check dropout specification
-  # TODO: Allow list for cause-specific dropout
-  # TODO: Add tests for dropout in RNN/CR
-  # TODO: Check l2 specification
-  # TODO: Allow list for cause-specific l2
-  # TODO: Add tests for l2 in RNN/CR
+  
+  if (!is.vector(dropout) || length(dropout) != length(units)) {
+    stop("Number of dropout layers not matching number of layers.")
+  }
+  if (!is.vector(dropout_rnn) || length(dropout_rnn) != length(units_rnn)) {
+    stop("Number of RNN dropout layers not matching number of RNN layers.")
+  }
+  if (!is.vector(dropout_causes) || length(dropout_causes) != length(units_causes)) {
+    stop("Number of cause-specific dropout layers not matching number of cause-specific layers.")
+  }
+  
+  if (!is.vector(l2) || length(l2) != length(units)) {
+    stop("Number of L2 regularization factors not matching number of layers.")
+  }
+  if (!is.vector(l2_rnn) || length(l2_rnn) != length(units_rnn)) {
+    stop("Number of RNN L2 regularization factors not matching number of RNN layers.")
+  }
+  if (!is.vector(l2_causes) || length(l2_causes) != length(units_causes)) {
+    stop("Number of cause-specific L2 regularization factors not matching number of cause-specific layers.")
+  }
   
   # Convert data, depending on loss function
   if (identical(loss, loss_cif_loglik)) {
