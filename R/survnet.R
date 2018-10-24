@@ -95,6 +95,7 @@ survnet <- function(y,
   # TODO: Check l2 specification
   # TODO: Allow list for cause-specific l2
   # TODO: Add tests for l2 in RNN/CR
+  # TODO: Use list(x, x_rnn) instead of additional parameter?
   
   # Convert data, depending on loss function
   if (identical(loss, loss_cif_loglik)) {

@@ -13,6 +13,9 @@ predict.survnet <- function(object, newdata, cause = NULL, ...) {
   if (is.data.frame(newdata)) {
     newdata <- as.matrix(newdata)
   }
+  if (is.list(newdata) && length(newdata) > 0 && is.data.frame(newdata[[1]])) {
+    newdata[[1]] <- as.matrix(newdata[[1]])
+  }
   
   # Predict with Keras
   pred <- object$model %>% predict(newdata)
