@@ -2,8 +2,7 @@
 #' Artificial neural networks for survival analysis
 #'
 #' @param y Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.
-#' @param x Predictors: \code{matrix} or \code{data.frame}.
-#' @param x_rnn Time-series predictors: \code{array}. Input for recurrent layers. 
+#' @param x Predictors: \code{matrix}, \code{data.frame} or \code{array} (time-series). Also accepts a list of \code{matrix/data.frame} and \code{array} for both time-constant and time-series predictors.
 #' @param breaks Right interval limits for discrete survival time.
 #' @param units Vector of units, each specifying the number of units in one hidden layer.
 #' @param units_rnn Vector of units for recurrent layers.
@@ -27,8 +26,7 @@
 #' @import survival keras
 #' @importFrom magrittr freduce
 survnet <- function(y, 
-                    x = NULL, 
-                    x_rnn = NULL,
+                    x, 
                     breaks, 
                     units = c(3, 5),
                     units_rnn = c(4, 6),
@@ -56,16 +54,21 @@ survnet <- function(y,
     stop("Unexpected type for 'y'.")
   }
   
-  if (!(is.null(x) || is.matrix(x))) {
+  # Unlist predictors
+  if (is.list(x) && !is.data.frame(x)) {
+    if (length(x) != 2 || !is.array(x[[2]])) {
+      stop("Parameter 'x' must be matrix, data.frame, array or list of exactly one matrix/data.frame and one array.")
+    } 
+    x_rnn <- x[[2]]
+    x <- x[[1]]
+  } else if (is.data.frame(x)) {
+    x_rnn <- NULL
     x <- as.matrix(x)
-  }
-  
-  if (!(is.null(x_rnn) || is.array(x_rnn))) {
-    stop("Parameter 'x_rnn' must be of type 'array'.")
-  }
-  
-  if (is.null(x) & is.null(x_rnn)) {
-    stop("Need at least one of 'x' and 'x_rnn'.")
+  } else if (is.matrix(x)) {
+    x_rnn <- NULL
+  } else if (is.array(x)) {
+    x_rnn <- x
+    x <- NULL
   }
   
   # Number of time intervals
@@ -95,7 +98,6 @@ survnet <- function(y,
   # TODO: Check l2 specification
   # TODO: Allow list for cause-specific l2
   # TODO: Add tests for l2 in RNN/CR
-  # TODO: Use list(x, x_rnn) instead of additional parameter?
   
   # Convert data, depending on loss function
   if (identical(loss, loss_cif_loglik)) {
