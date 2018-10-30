@@ -12,6 +12,7 @@
 #' @param validation_split Fraction in [0,1] of the training data to be used as validation data.
 #' @param loss Loss function. 
 #' @param activation Activtion function.
+#' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.
 #' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
 #' @param dropout_causes Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).
@@ -36,6 +37,7 @@ survnet <- function(y,
                     validation_split = 0.2,
                     loss = loss_cif_loglik, 
                     activation = "tanh",
+                    rnn_type = "LSTM",
                     dropout = rep(0, length(units)),
                     dropout_rnn = rep(0, length(units_rnn)), 
                     dropout_causes = rep(0, length(units_causes)),
@@ -162,8 +164,16 @@ survnet <- function(y,
       } else {
         kernel_regularizer <- NULL
       }
-      layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
-                 kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
+      if (rnn_type == "LSTM") {
+        layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
+                   kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
+      } else if (rnn_type == "GRU") {
+        layer_gru(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
+                   kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
+      } else {
+        stop("Unknown rnn_type.")
+      }
+      
     })
     # RNN Dropout layers
     for (i in 1:length(dropout_rnn)) {
@@ -217,7 +227,7 @@ survnet <- function(y,
                     kernel_regularizer = kernel_regularizer, name = paste0("cause", i, "_", j))
       })
       # Dropout layers
-      for (j in 1:length(dropout_causes)) {
+      for (j in 1:length(dropout_causes[[i]])) {
         if (dropout_causes[[i]][j] > 0) {
           layers <- append(layers, layer_dropout(rate = dropout_causes[[i]][j]), j + length(layers) - length(units_causes[[i]]))
         }

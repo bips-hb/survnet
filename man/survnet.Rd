@@ -7,10 +7,11 @@
 survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
   units_causes = c(3, 2), epochs = 100, batch_size = 16,
   validation_split = 0.2, loss = loss_cif_loglik,
-  activation = "tanh", dropout = rep(0, length(units)),
-  dropout_rnn = rep(0, length(units_rnn)), dropout_causes = rep(0,
-  length(units_causes)), l2 = rep(0, length(units)), l2_rnn = rep(0,
-  length(units_rnn)), l2_causes = rep(0, length(units_causes)),
+  activation = "tanh", rnn_type = "LSTM", dropout = rep(0,
+  length(units)), dropout_rnn = rep(0, length(units_rnn)),
+  dropout_causes = rep(0, length(units_causes)), l2 = rep(0,
+  length(units)), l2_rnn = rep(0, length(units_rnn)),
+  l2_causes = rep(0, length(units_causes)),
   optimizer = optimizer_rmsprop(lr = 0.001), verbose = 2)
 }
 \arguments{
@@ -35,6 +36,8 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 \item{loss}{Loss function.}
 
 \item{activation}{Activtion function.}
+
+\item{rnn_type}{Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.}
 
 \item{dropout}{Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).}
 

@@ -14,3 +14,9 @@ test_that("Specification of cause-specific layers works", {
   expect_length(grep("cause1", layer_names), 4)
   expect_length(grep("cause2", layer_names), 4)
 })
+
+test_that("Works with single cause-specific layer", {
+  expect_silent(survnet(y = dat$y, x = dat$x, breaks = breaks, epochs = 2, 
+                        units_causes = c(3), verbose = 0))
+})
+
