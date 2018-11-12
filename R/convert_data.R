@@ -1,5 +1,4 @@
 
-# TODO: Now we have S=1 in event interval, effect of change?
 #' Create binary response matrix for survival data
 #' 
 #' Creates matrix with at-risk and event information. Format: (S_1, ..., S_K, E_1, ..., E_K). Dimensions: obs X 2*causes*time.
@@ -17,13 +16,14 @@ convert_surv_cens <- function(time, status, breaks, num_causes) {
   E <- array(0, dim = c(n, length(breaks), num_causes))
   warn <- FALSE
   for (i in 1:n) {
-    idx <- time[i] >= breaks
+    idx <- time[i] > breaks
     S[i, which(idx), ] <- 1
     
-    # Set S=1 in event interval
+    # Set S=0 in event interval
     if (any(!idx)) {
-      S[i, min(which(!idx)), ] <- 1
+      S[i, min(which(!idx)), ] <- 0
       
+      # Set event
       if (status[i] > 0) {
         E[i, min(which(!idx)), status[i]] <- 1
       } 
