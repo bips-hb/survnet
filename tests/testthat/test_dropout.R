@@ -24,7 +24,8 @@ test_that("Dropout layer added", {
 
 test_that("Dropout layer added to RNN layers", {
   nn <- survnet(y = dat$y, x = dat$x, breaks = breaks_rnn, epochs = 2, 
-                units_rnn = c(3, 4), dropout_rnn = c(.2, .3), verbose = 0)
+                units_rnn = c(3, 4), dropout_rnn = c(.2, .3), verbose = 0, 
+                skip = FALSE)
   layer_names <- sapply(nn$model$layers, function(x) x$name)
   cleaned_layer_names <- gsub("_.*$", "", layer_names)
   expect_equal(cleaned_layer_names, 

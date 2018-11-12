@@ -11,8 +11,9 @@
 #' @param batch_size Number of samples per gradient update.
 #' @param validation_split Fraction in [0,1] of the training data to be used as validation data.
 #' @param loss Loss function. 
-#' @param activation Activtion function.
+#' @param activation Activation function.
 #' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.
+#' @param skip Add skip connection from input and RNN layers to cause-specific layers.
 #' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
 #' @param dropout_causes Vector of dropout rates after each cause-specific layer. Use 0 for no dropout (default).
@@ -38,6 +39,7 @@ survnet <- function(y,
                     loss = loss_cif_loglik, 
                     activation = "tanh",
                     rnn_type = "LSTM",
+                    skip = TRUE,
                     dropout = rep(0, length(units)),
                     dropout_rnn = rep(0, length(units_rnn)), 
                     dropout_causes = rep(0, length(units_causes)),
@@ -215,6 +217,22 @@ survnet <- function(y,
 
   if (num_causes > 1) {
     # Competing risk
+    
+    # Skip connections
+    if (skip) {
+      if (!is.null(x) & is.null(x_rnn)) {
+        # Only non-RNN
+        shared <- layer_concatenate(list(input, shared))
+      } else if (is.null(x) & !is.null(x_rnn)) {
+        # Only RNN
+        shared <- layer_concatenate(list(magrittr::freduce(input_rnn, rnn_layers), shared))
+      } else {
+        # Both non-RNN and RNN
+        shared <- layer_concatenate(list(input, magrittr::freduce(input_rnn, rnn_layers), shared))
+      }
+    }
+    
+    # Cause-specific layers
     sub_layers <- lapply(1:num_causes, function(i) {
       # Cause-specific layers
       layers <- lapply(1:length(units_causes[[i]]), function(j) {
@@ -232,6 +250,7 @@ survnet <- function(y,
           layers <- append(layers, layer_dropout(rate = dropout_causes[[i]][j]), j + length(layers) - length(units_causes[[i]]))
         }
       }
+
       magrittr::freduce(shared, layers)
     })
     output <- layer_concatenate(sub_layers) %>%

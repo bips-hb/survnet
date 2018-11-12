@@ -1,7 +1,7 @@
 Package: survnet
 Type: Package
 Title: Artificial neural networks for survival analysis
-Version: 0.0.3
+Version: 0.0.4
 Date: 2018-11-12
 Author: Marvin N. Wright
 Maintainer: Marvin N. Wright <cran@wrig.de>
