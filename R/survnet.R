@@ -12,7 +12,7 @@
 #' @param validation_split Fraction in [0,1] of the training data to be used as validation data.
 #' @param loss Loss function. 
 #' @param activation Activation function.
-#' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.
+#' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default), \code{"GRU"}, \code{"CUDNN_LSTM"} or \code{"CUDNN_GRU"}.
 #' @param skip Add skip connection from input and RNN layers to cause-specific layers.
 #' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
@@ -172,6 +172,12 @@ survnet <- function(y,
       } else if (rnn_type == "GRU") {
         layer_gru(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
                    kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
+      } else if (rnn_type == "CUDNN_LSTM") {
+        layer_cudnn_lstm(units = units_rnn[i], return_sequences = return_sequences, 
+                  kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
+      } else if (rnn_type == "CUDNN_GRU") {
+        layer_cudnn_gru(units = units_rnn[i], return_sequences = return_sequences, 
+                         kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
       } else {
         stop("Unknown rnn_type.")
       }

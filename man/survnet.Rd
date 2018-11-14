@@ -37,7 +37,7 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 
 \item{activation}{Activation function.}
 
-\item{rnn_type}{Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.}
+\item{rnn_type}{Type of RNN layers. Either \code{"LSTM"} (default), \code{"GRU"}, \code{"CUDNN_LSTM"} or \code{"CUDNN_GRU"}.}
 
 \item{skip}{Add skip connection from input and RNN layers to cause-specific layers.}
 
