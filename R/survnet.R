@@ -297,8 +297,9 @@ survnet <- function(y,
   }
   
   # Compile model
+  loss <- loss_cif_loglik(num_intervals, num_causes)
   model %>% compile(
-    loss = loss_cif_loglik(num_intervals, num_causes),
+    loss = loss,
     optimizer = optimizer
   )
 
