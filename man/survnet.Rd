@@ -4,15 +4,29 @@
 \alias{survnet}
 \title{Artificial neural networks for survival analysis}
 \usage{
-survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
-  units_causes = c(3, 2), epochs = 100, batch_size = 16,
-  validation_split = 0.2, loss = loss_cif_loglik,
-  activation = "tanh", rnn_type = "LSTM", skip = TRUE,
-  dropout = rep(0, length(units)), dropout_rnn = rep(0,
-  length(units_rnn)), dropout_causes = rep(0, length(units_causes)),
-  l2 = rep(0, length(units)), l2_rnn = rep(0, length(units_rnn)),
+survnet(
+  y,
+  x,
+  breaks,
+  units = c(3, 5),
+  units_rnn = c(4, 6),
+  units_causes = c(3, 2),
+  epochs = 100,
+  batch_size = 16,
+  validation_split = 0.2,
+  loss = loss_cif_loglik,
+  activation = "tanh",
+  rnn_type = "LSTM",
+  skip = TRUE,
+  dropout = rep(0, length(units)),
+  dropout_rnn = rep(0, length(units_rnn)),
+  dropout_causes = rep(0, length(units_causes)),
+  l2 = rep(0, length(units)),
+  l2_rnn = rep(0, length(units_rnn)),
   l2_causes = rep(0, length(units_causes)),
-  optimizer = optimizer_rmsprop(lr = 0.001), verbose = 2)
+  optimizer = optimizer_rmsprop(learning_rate = 0.001),
+  verbose = 2
+)
 }
 \arguments{
 \item{y}{Survival outcome: \code{matrix}, \code{data.frame} or \code{Surv()} object.}
@@ -37,7 +51,7 @@ survnet(y, x, breaks, units = c(3, 5), units_rnn = c(4, 6),
 
 \item{activation}{Activation function.}
 
-\item{rnn_type}{Type of RNN layers. Either \code{"LSTM"} (default), \code{"GRU"}, \code{"CUDNN_LSTM"} or \code{"CUDNN_GRU"}.}
+\item{rnn_type}{Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.}
 
 \item{skip}{Add skip connection from input and RNN layers to cause-specific layers.}
 
@@ -64,6 +78,7 @@ Fitted model.
 Artificial neural networks for survival analysis
 }
 \examples{
+\donttest{
 library(survival)
 library(survnet)
 
@@ -76,5 +91,6 @@ breaks <- c(1, 50, 100, 200, 500, 1000)
 # Fit simple model
 fit <- survnet(y = y, x = x, breaks = breaks)
 plot(fit$history)
+}
 
 }

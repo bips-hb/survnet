@@ -12,7 +12,7 @@
 #' @param validation_split Fraction in [0,1] of the training data to be used as validation data.
 #' @param loss Loss function. 
 #' @param activation Activation function.
-#' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default), \code{"GRU"}, \code{"CUDNN_LSTM"} or \code{"CUDNN_GRU"}.
+#' @param rnn_type Type of RNN layers. Either \code{"LSTM"} (default) or \code{"GRU"}.
 #' @param skip Add skip connection from input and RNN layers to cause-specific layers.
 #' @param dropout Vector of dropout rates after each hidden layer. Use 0 for no dropout (default).
 #' @param dropout_rnn Vector of dropout rates after each recurrent layer. Use 0 for no dropout (default).
@@ -24,22 +24,24 @@
 #' @param verbose Verbosity mode (0 = silent, 1 = progress bar, 2 = one line per epoch). 
 #' 
 #' @return Fitted model.
-#' @examples 
+#' @examples
+#' \donttest{
 #' library(survival)
 #' library(survnet)
-#' 
+#'
 #' # Survival data
 #' y <- veteran[, c(3, 4)]
 #' x <- veteran[, c(-2, -3, -4)]
 #' x <- data.frame(lapply(x, scale))
 #' breaks <- c(1, 50, 100, 200, 500, 1000)
-#' 
+#'
 #' # Fit simple model
 #' fit <- survnet(y = y, x = x, breaks = breaks)
 #' plot(fit$history)
+#' }
 #' 
 #' @export
-#' @import survival keras
+#' @import survival keras3
 #' @importFrom magrittr freduce
 survnet <- function(y, 
                     x, 
@@ -60,7 +62,7 @@ survnet <- function(y,
                     l2 = rep(0, length(units)), 
                     l2_rnn = rep(0, length(units_rnn)), 
                     l2_causes = rep(0, length(units_causes)), 
-                    optimizer = optimizer_rmsprop(lr = 0.001), 
+                    optimizer = optimizer_rmsprop(learning_rate = 0.001),
                     verbose = 2) {
   
   # Force evaluation of dependent arguments
@@ -176,24 +178,18 @@ survnet <- function(y,
         return_sequences <- TRUE
       }
       if (l2_rnn[i] > 0) {
-        kernel_regularizer <- regularizer_l2(l = l2_rnn[i])
+        kernel_regularizer <- regularizer_l2(l2 = l2_rnn[i])
       } else {
         kernel_regularizer <- NULL
       }
       if (rnn_type == "LSTM") {
-        layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
+        layer_lstm(units = units_rnn[i], activation = activation, return_sequences = return_sequences,
                    kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
       } else if (rnn_type == "GRU") {
-        layer_gru(units = units_rnn[i], activation = activation, return_sequences = return_sequences, 
+        layer_gru(units = units_rnn[i], activation = activation, return_sequences = return_sequences,
                    kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
-      } else if (rnn_type == "CUDNN_LSTM") {
-        layer_cudnn_lstm(units = units_rnn[i], return_sequences = return_sequences, 
-                  kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
-      } else if (rnn_type == "CUDNN_GRU") {
-        layer_cudnn_gru(units = units_rnn[i], return_sequences = return_sequences, 
-                         kernel_regularizer = kernel_regularizer, name = paste0("rnn_", i))
       } else {
-        stop("Unknown rnn_type.")
+        stop("Unknown rnn_type. Use 'LSTM' or 'GRU'.")
       }
       
     })
@@ -208,7 +204,7 @@ survnet <- function(y,
   # non-RNN layers
   dense_layers <- lapply(1:length(units), function(i) {
     if (l2[i] > 0) {
-      kernel_regularizer <- regularizer_l2(l = l2[i])
+      kernel_regularizer <- regularizer_l2(l2 = l2[i])
     } else {
       kernel_regularizer <- NULL
     }
@@ -257,7 +253,7 @@ survnet <- function(y,
       # Cause-specific layers
       layers <- lapply(1:length(units_causes[[i]]), function(j) {
         if (l2_causes[[i]][j] > 0) {
-          kernel_regularizer <- regularizer_l2(l = l2_causes[[i]][j])
+          kernel_regularizer <- regularizer_l2(l2 = l2_causes[[i]][j])
         } else {
           kernel_regularizer <- NULL
         }
