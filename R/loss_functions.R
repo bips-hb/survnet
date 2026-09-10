@@ -16,23 +16,23 @@
 #' @export
 #' @references 
 #'  \itemize{
-#'   \item Jeong, J. & Fine, J. (2006). Direct parametric inference for the cumulative incidence function. J R Stat Soc Ser C Appl Stat 55:187-200. \url{https://doi.org/10.1111/j.1467-9876.2006.00532.x}.
+#'   \item Jeong, J. & Fine, J. (2006). Direct parametric inference for the cumulative incidence function. J R Stat Soc Ser C Appl Stat 55:187-200. \doi{10.1111/j.1467-9876.2006.00532.x}.
 #'   \item Lee, C., Zame, W.R., Yoon, J. & van der Shaar, M. (2018). DeepHit: A deep learning approach to survival analysis with competing risks. AAAI 2018. \url{http://medianetlab.ee.ucla.edu/papers/AAAI_2018_DeepHit}.
 #'  }
 loss_cif_loglik <- function(num_intervals, num_causes = 1){
   function(y_true, y_pred) {
-    K <- backend()
-    
+    eps <- config_epsilon()
+
     # Survival and event indicators
     S <- y_true[, 1:(num_causes * num_intervals)] # Survival
     E <- y_true[, (num_causes * num_intervals + 1):(2 * num_causes * num_intervals)] # Events
-    
+
     # Likelihood part for uncensored and censored observations (0 for censored)
-    uncens <- K$sum(E * K$log(K$clip(y_pred, K$epsilon(), NULL)), axis = -1L)
-    delta <- 1 - K$sum(E, axis = -1L)
-    cens <- delta * K$log(K$clip(1 - K$sum(S * y_pred, axis = -1L), K$epsilon(), NULL))
-    
-    # Return negative log-likelihood 
+    uncens <- op_sum(E * op_log(op_clip(y_pred, eps, 1)), axis = -1L)
+    delta <- 1 - op_sum(E, axis = -1L)
+    cens <- delta * op_log(op_clip(1 - op_sum(S * y_pred, axis = -1L), eps, 1))
+
+    # Return negative log-likelihood
     -(uncens + cens)
   }
 }

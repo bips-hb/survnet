@@ -18,7 +18,7 @@ Negative log-likelihood
 Likelihood of parametric inference for the cumulative incidence functions as defined by Jeong & Fine 2006. Also used by Lee et al. 2018.
 }
 \details{
-Data structure:
+Data structure: 
 
 \code{y_true} True survival: Matrix with at-risk and event information. Format: (S_1, ..., S_K, E_1, ..., E_K). Dimensions: obs X 2*causes*time.
 
@@ -26,7 +26,7 @@ Data structure:
 }
 \references{
 \itemize{
-  \item Jeong, J. & Fine, J. (2006). Direct parametric inference for the cumulative incidence function. J R Stat Soc Ser C Appl Stat 55:187-200. \url{https://doi.org/10.1111/j.1467-9876.2006.00532.x}.
+  \item Jeong, J. & Fine, J. (2006). Direct parametric inference for the cumulative incidence function. J R Stat Soc Ser C Appl Stat 55:187-200. \doi{10.1111/j.1467-9876.2006.00532.x}.
   \item Lee, C., Zame, W.R., Yoon, J. & van der Shaar, M. (2018). DeepHit: A deep learning approach to survival analysis with competing risks. AAAI 2018. \url{http://medianetlab.ee.ucla.edu/papers/AAAI_2018_DeepHit}.
  }
 }

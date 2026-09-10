@@ -1,17 +1,20 @@
-Package: survnet
 Type: Package
-Title: Artificial neural networks for survival analysis
-Version: 0.0.5
-Date: 2018-11-12
-Author: Marvin N. Wright
-Maintainer: Marvin N. Wright <cran@wrig.de>
-Description: Artificial neural networks for survival analysis
+Package: survnet
+Title: Artificial Neural Networks for Survival Analysis
+Version: 0.0.7
+Authors@R: 
+    person(c("Marvin", "N."), "Wright", , "cran@wrig.de", role = c("aut", "cre"))
+Description: Fits artificial neural networks for survival analysis,
+    including competing risks, using 'keras3'.
 License: MIT + file LICENSE
 Depends:
-    survival, 
-    keras
+    keras3,
+    survival
 Imports:
-    magrittr
-Suggests: 
-    testthat
-RoxygenNote: 6.1.0
+    magrittr,
+    reticulate
+Suggests:
+    testthat (>= 3.0.0)
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3

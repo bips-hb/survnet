@@ -1,24 +1,35 @@
-survnet: Artificial neural networks for survival analysis
-================
+---
+title: "survnet: Artificial neural networks for survival analysis"
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
 
 Marvin N. Wright
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/bips-hb/survnet/actions/workflows/R-CMD-check.yaml/badge.svghttps://github.com/bips-hb/survnet/actions/workflows/R-CMD-check.yaml/badge.svghttps://github.com/bips-hb/survnet/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bips-hb/survnet/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+
 ## Installation
 
-``` r
+```r
 pak::pak("bips-hb/survnet")
 ```
 
 ## Example
 
-``` r
+```r
 library(survnet)
 
 # Survival data
